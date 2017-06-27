@@ -88,9 +88,9 @@ relation endpoint. This loads the charm but since the machine is already
 provisioned and is running Ubuntu it's nearly a noop.
 
 
-    juju deploy ubuntu --to 1
+    juju deploy ubuntu --to 0
+    juju add-unit ubuntu --to 1
     juju add-unit ubuntu --to 2
-    juju add-unit ubuntu --to 3
 
 
 Once the Ubuntu charm is added a relation to Telegraf can be established
