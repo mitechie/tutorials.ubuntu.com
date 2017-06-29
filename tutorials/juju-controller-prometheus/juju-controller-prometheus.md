@@ -108,8 +108,8 @@ The metrics are then collected by an instance of Prometheus.
 Once the machine is up and available a cert needs to be sent to the machine
 for use.
 
-
-    juju scp ./controller-ca-cert prometheus/0:~/controller-ca.cert
+    juju controller-config ca-cert > controller-ca.cert
+    juju scp ./controller-ca.cert prometheus/0:~/controller-ca.cert
     juju ssh prometheus/0
     sudo mv controller-ca.cert /var/snap/prometheus/current
     <ctrl-D>
@@ -117,12 +117,23 @@ for use.
     juju relate telegraf:prometheus-client prometheus:target
 
 
+The metrics endpoint on the Juju controllers uses basic HTTP authenticiation
+to limit who can access it. To provide limited access, create a user in Juju
+for the purpose of scraping the data, and give that user read access to the
+controller model.
+
+    juju add-user prometheus
+    juju grant prometheus read controller
+    juju change-user-password prometheus
+    # remember this password, it is used in the scrape-jobs.yaml
+
 Prometheus needs to be configured to scrape the information from the
 controllers. The telegraf information will come over via a relation, but
 there's no relation for the Juju provided data. A sample yaml file is
-[available here]().
+[available here](./sample/scrape-jobs.yaml).
 
-Update the configuration with the IP addresses of the controller machines.
+Update the configuration with the IP addresses of the controller machines,
+and the password set for the prometheus user.
 Once the file is updated set it as configuration on the Prometheus
 application.
 
@@ -170,7 +181,30 @@ Now log into your Grafana url
 2. username: admin
 3. password: $whatever_you_set_in_above_config
 
-And you can load the included dashboards that are provided. The first is for XXXXX and the second is better for watching after YYYYY.
+Choose `Import` from the `Home` menu. You can `paste JSON` from the [sample dashboard](./sample/controller-dashboard.json).
+
+This dashboard has a number of rows, some general summary information, and some per machine.
+
+The first is the `controller summary`.
+
+* API calls per second - shows calls per second to the various API servers over one minute window and 15 minute window.
+* API connections - shows the number of API connections to each of the API servers
+* Open file descriptors - shows the open file count for each of the API servers
+
+The `API Calls` row has a single graph that shows the top five most frequent called methods on the API over the last minute. The number shown is in calls per second.
+
+The `Mongo` row shows the most frequent mgo operations in the controller, and the number of times the API server opens a connection to the database and also rates of failure.
+
+There is then a row for each of the API server machines showing memory usage for jujud.
+The `juju metrics` drop down at the top of the dashboard allows control over which machine (or all) are shown.
+
+* memory usage - this shows how much memory the jujud process has been given in total, along with how much is currently used by the heap and stack
+* mallocs / frees - shows rates for new heap memory allocation and releasing
+* go heap objects - shows the number of active go objects in the heap
+* goroutines - shows the number of goroutines running the API server process
+
+
+The `machine metrics` rows are fed from the telegraph charm and show the CPU usage of the machine, and the total memory usage.
 
 
 @todo when do we want to use which dashboard
