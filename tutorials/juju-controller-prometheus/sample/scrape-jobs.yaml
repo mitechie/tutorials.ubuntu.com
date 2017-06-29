@@ -1,0 +1,30 @@
+- job_name: machine-0
+  metrics_path: /introspection/metrics
+  scheme: https
+  static_configs:
+    - targets: ['<machine-0 ip>:17070']
+  basic_auth:
+    username: user-prometheus
+    password: <password>
+  tls_config:
+    ca_file: /var/snap/prometheus/current/controller-ca.cert
+- job_name: machine-1
+  metrics_path: /introspection/metrics
+  scheme: https
+  static_configs:
+    - targets: ['<machine-1 ip>:17070']
+  basic_auth:
+    username: user-prometheus
+    password: <password>
+  tls_config:
+    ca_file: /var/snap/prometheus/current/controller-ca.cert
+- job_name: machine-2
+  metrics_path: /introspection/metrics
+  scheme: https
+  static_configs:
+    - targets: ['<machine-2 ip>:17070']
+  basic_auth:
+    username: user-prometheus
+    password: <password>
+  tls_config:
+    ca_file: /var/snap/prometheus/current/controller-ca.cert
